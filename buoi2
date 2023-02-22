@@ -1,0 +1,80 @@
+--1) Liệt kê danh sách các hóa đơn (SalesOrderID) lặp trong tháng 6 năm 2008 có tổng tiền >70000, 
+	select d.SalesOrderID, OrderDate, SubTotal=sum(OrderQty * UnitPrice)
+	from sales.SalesOrderDetail d join Sales.SalesOrderHeader h on d.SalesOrderID = h.SalesOrderID
+	where  MONTH(OrderDate) = 6 and YEAR(OrderDate) = 2008  
+	group by d.SalesOrderID, OrderDate
+	having SUM(OrderQty * UnitPrice) > 70000
+
+--2) Đếm tổng số khách hàng và tổng tiền của những khách hàng thuộc các quốc gia có mã vùng là US
+	select STT.TerritoryID, COUNT(SC.CustomerID) AS 'CountOfCust' , SUM(SSOD.OrderQty * SSOD.UnitPrice) AS 'SubTotal' 
+	from Sales.SalesTerritory AS SST ON  join Sales.Customer  AS SC 
+		on STT.TerritoryID = SC.TerritoryID
+		join Sales.SalesOrderHeader AS SSOH
+		on SSOH.TerrritoryID = SC.TerritoryID
+		join Sales.SalesOrderDetail AS SSOD 
+		on SSOD.SalesOrderID = SSOH.SalesOrderID
+	where SST.CountryRegionCode = 'US' 
+	group by SST.TerritoryID
+
+--3) Tính Tổng giá trị của những hóa đơn với Mã theo giỏi giao hàng
+	SELECT ssod.SalesOrderID, ssod.CarrierTrackingNumber, SUM (OrderQty*UnitPrice) as 'SubTotal'
+	From sales.SalesOrderDetail as ssod
+	group by ssod.SalesOrderID, ssod.CarrierTrackingNumber
+	having ssod.CarrierTrackingNumber like '4BD%'
+
+--4) Liệt kê các sản phẩm (product)có đơn giá (unitPrice)<25 và số lượng bán trung bình >5
+	select pp.ProductID, PP.Name, AVG(ssod.Unitprice) as 'AverageOfQty'
+	from Production.Product as pp join sales.SalesOrderDetail as ssod
+		on pp.ProductID = ssod.ProductID
+	where ssod.UnitPrice < 25
+	group by pp.ProductID, pp.Name
+	having avg(ssod.OrderQty) > 5
+
+--5) Liệt kê các công việc (JobTitle) có tổng số nhân viên >20 người
+	select hre.JobTitle, count(hre.BusinessEntityID) 'CountOfPerson'
+	from HumanResources.Employee hre
+	group by hre.JobTitle
+	having count(hre.BusinessEntityID) > 20
+
+--6) Tính tổng số lượng và tổng giá trị các sản phẩm
+	select v.BusinessEntityID, v.Name, ProductID, sumofQty = SUM(OrderQty), SubTotal = SUM(OrderQty * UnitPrice)
+	from Purchasing.Vendor v join Purchasing.PurchaseOrderHeader h on h.VendorID = v.BusinessEntityID
+							 join Purchasing.PurchaseOrderDetail d on h.PurchaseOrderID = d.PurchaseOrderID
+	where v.Name like '%Bicycles'
+	group by v.BusinessEntityID, v.Name, ProductID
+	having SUM(OrderQty * UnitPrice) > 800000	
+
+--7) Liệt kê các sản phẩm có trên 500 đơn đặt hàng trong quí 1 	
+	select p.ProductID, p.Name, countofOrderID = COUNT(o.SalesOrderID), Subtotal = sum(OrderQty * UnitPrice) 
+	from Production.Product p join Sales.SalesOrderDetail o on p.ProductID = o.ProductID
+							  join sales.SalesOrderHeader h on h.SalesOrderID = o.SalesOrderID
+	where Datepart(q, OrderDate) =1 and YEAR(OrderDate) = 2008
+	group by p.ProductID, p.Name
+	having sum(OrderQty * UnitPrice) > 10000 and COUNT(o.SalesOrderID) > 500
+
+--8) Liệt kê danh sách các khách hàng có trên 25 hóa đơn đặt hàng từ năm 2007 đến 2008, 
+	select PersonID, FirstName +' '+ LastName as fullname, CountOfOrders=count(*)
+	from [Person].[Person] p join [Sales].[Customer] c on p.BusinessEntityID=c.CustomerID
+							 join [Sales].[SalesOrderHeader] h on h.CustomerID= c.CustomerID
+	where YEAR([OrderDate])>=2007 and YEAR([OrderDate])<=2008
+	group by PersonID, FirstName +' '+ LastName
+	having count(*)>25
+
+--9)Liệt kê những sản phẩm có tên bắt đầu với ‘Bike’ và ‘Sport’
+	select p.ProductID, Name, CountofOrderQty=sum([OrderQty]), yearofSale=year([OrderDate])
+	from [Production].[Product] p join [Sales].[SalesOrderDetail] d on p.ProductID=d.ProductID
+								  join [Sales].[SalesOrderHeader] h on d.SalesOrderID=d.SalesOrderID
+	where name like 'Bike%' or name like 'Sport%'
+	group by p.ProductID, Name, year([OrderDate])
+	having sum([OrderQty])>500
+
+--10) Liệt kê những phòng ban có lương (Rate: lương theo giờ) trung bình >30
+	select d.DepartmentID, d.name, AvgofRate=avg([Rate])
+	from [HumanResources].[Department] d 
+		join [HumanResources].[EmployeeDepartmentHistory] h on d.DepartmentID=h.DepartmentID
+		join [HumanResources].[EmployeePayHistory] e on h.BusinessEntityID=e.BusinessEntityID
+	group by d.DepartmentID, d.name
+	having avg([Rate])>30
+
+
+
