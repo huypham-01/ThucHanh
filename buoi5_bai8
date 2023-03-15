@@ -1,0 +1,29 @@
+--1. Viết SP spTangLuong dùng để tăng lương lên 10% cho tất cả các nhân viên.
+    CREATE PROC spTangLuong AS UPDATE NHANVIEN set LUONG = LUONG*0.1
+    GO
+    EXEC spTangLuong    
+--2. Thêm vào cột NgayNghiHuu (ngày nghỉ hưu) trong bảng NHANVIEN.
+    ALTER TABLE NHANVIEN
+    ADD NgayNghiHuu DATE
+    CREATE PROC spNghiHuu
+    AS
+    UPDATE NHANVIEN SET NgayNghiHuu = (SELECT GETDATE() +100)
+    GO
+    EXEC spNghiHuu
+--3. Tạo SP spXemDeAn cho phép xem các đề án có địa điểm đề án được truyền vào khi gọi thủ tục.
+    CREATE PROC spXemDeAn @diadiem NVARCHAR(20)
+    AS
+    SELECT * FROM DEAN WHERE DDIEM_DA = @diadiem
+    GO
+    EXEC spXemDeAn N'TP HCM'
+
+    
+--4. Tạo SP spCapNhatDeAn cho phép cập nhật lại địa điểm đề án với 2 tham số truyền vào là diadiem_cu, diadiem_moi.
+
+--5. Viết SP spThemDeAn để thêm dữ liệu vào bảng DEAN với các tham số vào là các trường của bảng DEAN.
+--6. Cập nhật SP spThemDeAn ở câu trên để thỏa mãn ràng buộc sau
+--7. Tạo SP spXoaDeAn cho phép xóa các đề án với tham số truyền vào là Mã đề án.
+--8. Cập nhật SP spXoaDeAn cho phép xóa các đề án với tham số truyền vào là Mã đề án.
+--9. Tạo SP spTongGioLamViec có tham số truyền vào là MaNV, tham số ra là tổng thời gian (tính bằng giờ) làm việc ở tất cả các dự án của nhân viên đó.
+--10. Viết SP spTongTien để in ra màn hình tổng tiền phải trả cho nhân viên với tham số truyền vào là mã nhân viên.
+--11. Viết SP spThemPhanCong để thêm dữ liệu vào bảng PHANCONG thỏa mãn yêu cầu
